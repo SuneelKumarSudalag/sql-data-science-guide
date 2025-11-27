@@ -1,7 +1,20 @@
 # 7 SQL Queries Every Data Scientist Should Know
 
+
 ## Overview
 Master these essential SQL patterns to become a production-ready data professional. These queries are used daily in real data science jobs across AWS, Azure, and GCP.
+
+
+## ⚠️ SQL Dialect Disclaimer
+
+**Note:** This guide primarily uses ANSI SQL standard syntax for maximum portability. However, some examples may include MySQL, PostgreSQL, or SQL Server specific features. When using these queries:
+
+- **MySQL**: Supports column aliases in GROUP BY (e.g., `GROUP BY customer_segment`)
+- **SQL Server**: Does NOT support aliases in GROUP BY - use the actual expression instead
+- **PostgreSQL**: Does NOT support aliases in GROUP BY
+- **Standard SQL**: Always use the full expression in GROUP BY for portability
+
+For production code and teaching materials, always use the full expression in GROUP BY clauses to ensure compatibility across all RDBMS platforms.
 
 ---
 
@@ -98,8 +111,8 @@ Use CASE statements within aggregate functions to create conditional segments.
 ### Example: Cohort Analysis
 ```sql
 -- Segment customers by purchase frequency
-SELECT 
-    CASE 
+SELECT
+    CASE
         WHEN purchase_count = 0 THEN 'No Purchases'
         WHEN purchase_count BETWEEN 1 AND 5 THEN 'Light Buyer'
         WHEN purchase_count BETWEEN 6 AND 20 THEN 'Regular Buyer'
@@ -109,7 +122,12 @@ SELECT
     AVG(total_spent) as avg_spent,
     MIN(last_purchase_date) as earliest_purchase
 FROM customer_summary
-GROUP BY customer_segment
+GROUP BY CASE                    ← ✅ REPEAT THE EXPRESSION
+    WHEN purchase_count = 0 THEN 'No Purchases'
+    WHEN purchase_count BETWEEN 1 AND 5 THEN 'Light Buyer'
+    WHEN purchase_count BETWEEN 6 AND 20 THEN 'Regular Buyer'
+    ELSE 'Power Buyer'
+END
 ORDER BY customer_count DESC;
 ```
 
@@ -420,6 +438,23 @@ Take a slow query and optimize it using indexes.
 - **Performance:** Partition tables by date for massive datasets
 
 ---
+
+## SQL Dialect Portability Guide
+
+This guide uses ANSI SQL standard syntax wherever possible. Below are key differences when migrating between databases:
+
+### GROUP BY Clause Differences
+
+| Syntax | MySQL | SQL Server | PostgreSQL | Standard SQL |
+|--------|-------|------------|------------|--------------|
+| `GROUP BY alias_name` | ✅ Works | ❌ Error | ❌ Error | ❌ Not allowed |
+| `GROUP BY expression` | ✅ Works | ✅ Works | ✅ Works | ✅ Standard |
+
+**Always use:** `GROUP BY expression` (not alias)
+
+### Example: Correct Portability Pattern
+
+
 
 ## Key Takeaways
 
